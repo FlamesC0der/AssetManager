@@ -19,8 +19,6 @@ def check_asset(asset_path: str, asset_url: str):
     asset_name = asset_path.split("/")[-1]
     if not os.path.isfile(asset_full_path):
         download_asset(asset_full_path, asset_path, asset_name, asset_url)
-    else:
-        print("Asset already exist")
 
 
 def download_asset(asset_full_path: str, asset_path: str, asset_name: str, asset_link: str):
