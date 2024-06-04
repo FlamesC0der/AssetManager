@@ -7,6 +7,8 @@ import threading
 
 ROOT_DIR = os.path.dirname(__file__)
 
+pbar_width = os.get_terminal_size().columns - 10
+
 
 def check_asset(asset_path: str, asset_url: str):
     asset_name = asset_path.split("/")[-1]
@@ -26,7 +28,7 @@ def download_asset(asset_link: str, asset_path: str):
         with requests.get(asset_link, stream=True) as r:
             r.raise_for_status()
             with open(asset_path, 'wb') as f:
-                pbar = tqdm(total=int(r.headers['Content-Length']), unit="B", unit_scale=True, ncols=150,
+                pbar = tqdm(total=int(r.headers['Content-Length']), unit="B", unit_scale=True, ncols=pbar_width,
                             colour="WHITE")
                 for chunk in r.iter_content(chunk_size=8192):
                     if chunk:
