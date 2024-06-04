@@ -4,30 +4,31 @@ import os
 import sys
 import json
 import threading
+from pathlib import Path
 
-ROOT_DIR = os.path.dirname(__file__)
+from misc import ROOT_DIR
 
 pbar_width = os.get_terminal_size().columns - 10
+if pbar_width <= 10:
+    pbar_width = 100
 
 
 def check_asset(asset_path: str, asset_url: str):
+    asset_full_path = os.path.join(ROOT_DIR, "assets", asset_path)
+    asset_path = '/'.join(asset_full_path.split("/")[:-1])
     asset_name = asset_path.split("/")[-1]
-    if os.path.isfile(os.path.join(ROOT_DIR, "assets", asset_name)):
-        return True
+    if not os.path.isfile(asset_full_path):
+        download_asset(asset_full_path, asset_path, asset_name, asset_url)
     else:
-        download_asset(asset_url, asset_path)
+        print("Asset already exist")
 
 
-def download_asset(asset_link: str, asset_path: str):
+def download_asset(asset_full_path: str, asset_path: str, asset_name: str, asset_link: str):
     try:
-        if not os.path.isdir(asset_path):
-            try:
-                os.makedirs(os.path.dirname(asset_path))
-            except Exception:
-                pass
+        Path(asset_path).mkdir(parents=True, exist_ok=True)
         with requests.get(asset_link, stream=True) as r:
             r.raise_for_status()
-            with open(asset_path, 'wb') as f:
+            with open(asset_full_path, 'wb') as f:
                 pbar = tqdm(
                     total=int(r.headers['Content-Length']),
                     unit="B",
@@ -40,15 +41,12 @@ def download_asset(asset_link: str, asset_path: str):
                     if chunk:
                         f.write(chunk)
                         pbar.update(len(chunk))
-    except KeyboardInterrupt:
-        sys.exit("Asset download canceled by user")
     except Exception as e:
-        print(f"An error occurred while downloading asset: {e}")
-        sys.exit(f"An error occurred while downloading asset")
+        sys.exit()
 
 
 def check_all_assets():
-    with open(os.path.join(ROOT_DIR, "assets.json")) as f:
+    with open(os.path.join(ROOT_DIR, "asset_manager", "assets.json")) as f:
         assets = json.load(f)
 
     download_tasks = {}
