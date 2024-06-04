@@ -8,8 +8,9 @@ from pathlib import Path
 
 from misc import ROOT_DIR
 
-pbar_width = os.get_terminal_size().columns - 10
-if pbar_width <= 10:
+try:
+    pbar_width = os.get_terminal_size().columns - 10
+except Exception:
     pbar_width = 100
 
 
